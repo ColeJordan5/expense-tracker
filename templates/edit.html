@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Expense</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Edit Expense</h1>
+    <form method="POST">
+        <label>Item:</label>
+        <input name="item" value="{{ expense.item }}" required>
+        <label>Amount:</label>
+        <input name="amount" type="number" step="0.01" value="{{ expense.amount }}" required>
+        <button type="submit">Save Changes</button>
+    </form>
+    <a href="{{ url_for('index') }}">Cancel</a>
+</body>
+</html>

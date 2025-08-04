@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Monthly Summary</title>
+</head>
+<body>
+    <h1>Monthly Expense Summary</h1>
+
+    <form method="post">
+        <label for="month">Select Month:</label>
+        <input type="month" id="month" name="month" required value="{{ month }}">
+        <button type="submit">Show Summary</button>
+    </form>
+
+    {% if month %}
+        <h2>Expenses for {{ month }}</h2>
+
+        {% if expenses %}
+            <ul>
+            {% for expense in expenses %}
+                <li>{{ expense.date }} - {{ expense.item }}: ${{ '%.2f'|format(expense.amount) }}</li>
+            {% endfor %}
+            </ul>
+
+            <p><strong>Total:</strong> ${{ '%.2f'|format(total) }}</p>
+
+            <canvas id="categoryChart" width="400" height="400"></canvas>
+
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                const ctx = document.getElementById('categoryChart').getContext('2d');
+                const categoryChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: {{ categories | tojson }},
+                        datasets: [{
+                            label: 'Spending by Category',
+                            data: {{ amounts | tojson }},
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.7)',
+                                'rgba(54, 162, 235, 0.7)',
+                                'rgba(255, 206, 86, 0.7)',
+                                'rgba(75, 192, 192, 0.7)',
+                                'rgba(153, 102, 255, 0.7)',
+                                'rgba(255, 159, 64, 0.7)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                    }
+                });
+            </script>
+        {% else %}
+            <p>No expenses found for {{ month }}.</p>
+        {% endif %}
+    {% endif %}
+
+    <a href="{{ url_for('index') }}">Back to Home</a>
+</body>
+</html>

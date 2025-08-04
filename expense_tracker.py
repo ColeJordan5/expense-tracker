@@ -1,53 +1,86 @@
-def main():
-    print("Welcome to your Expense Tracker!")
-    while True:
-        print("\nChoose an option:")
-        print("1. Add an expense")
-        print("2. View summary")
-        print("3. Exit")
+import csv
+from datetime import datetime
 
-        choice = input("Enter your choice (1-3): ")
+FILENAME = "expenses.csv"
+
+def add_expense():
+    category = input("Enter expense category (e.g., food, rent): ").strip()
+    amount = input("Enter amount: ").strip()
+
+    # Validate amount
+    try:
+        amount = float(amount)
+    except ValueError:
+        print("Amount must be a number.")
+        return
+
+    # Get today's date in YYYY-MM-DD format
+    today = datetime.today().strftime('%Y-%m-%d')
+
+    with open(FILENAME, 'a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([today, category, amount])
+    
+    print(f"✅ Expense added: {category} - ${amount} on {today}")
+
+def view_expenses():
+    try:
+        with open(FILENAME, 'r') as file:
+            reader = csv.reader(file)
+            print("\n📄 All Expenses:")
+            print("DATE        | CATEGORY       | AMOUNT")
+            print("--------------------------------------")
+            total = 0
+            for row in reader:
+                date, category, amount = row
+                print(f"{date} | {category:<14} | ${amount}")
+                total += float(amount)
+            print(f"\n💰 Total Spent: ${total:.2f}")
+    except FileNotFoundError:
+        print("No expenses found yet.")
+
+def view_monthly_summary():
+    month_input = input("Enter month (YYYY-MM): ").strip()
+    try:
+        datetime.strptime(month_input, "%Y-%m")
+    except ValueError:
+        print("Invalid format. Use YYYY-MM (e.g., 2025-08).")
+        return
+
+    try:
+        with open(FILENAME, 'r') as file:
+            reader = csv.reader(file)
+            print(f"\n📊 Summary for {month_input}:")
+            total = 0
+            for row in reader:
+                date, category, amount = row
+                if date.startswith(month_input):
+                    print(f"{date} | {category:<14} | ${amount}")
+                    total += float(amount)
+            print(f"\n📅 Total Spent in {month_input}: ${total:.2f}")
+    except FileNotFoundError:
+        print("No expenses recorded yet.")
+
+def show_menu():
+    while True:
+        print("\n===== EXPENSE TRACKER =====")
+        print("1. Add New Expense")
+        print("2. View All Expenses")
+        print("3. Monthly Summary")
+        print("4. Exit")
+        choice = input("Choose an option: ")
 
         if choice == "1":
             add_expense()
         elif choice == "2":
-            show_summary()
+            view_expenses()
         elif choice == "3":
-            print("Goodbye!")
+            view_monthly_summary()
+        elif choice == "4":
+            print("👋 Exiting. See you later!")
             break
         else:
-            print("Invalid choice. Try again.")
+            print("Invalid choice. Try 1, 2, 3, or 4.")
 
-def add_expense():
-    amount = input("Enter amount spent: $")
-    category = input("Enter category (e.g. Food, Gas, Bills): ")
-    with open("expenses.txt", "a") as file:
-        file.write(f"{amount},{category}\n")
-    print("Expense added!")
-
-def show_summary():
-    try:
-        with open("expenses.txt", "r") as file:
-            lines = file.readlines()
-    except FileNotFoundError:
-        print("No expenses yet.")
-        return
-
-    total = 0
-    categories = {}
-
-    for line in lines:
-        amount, category = line.strip().split(",")
-        amount = float(amount)
-        total += amount
-        if category in categories:
-            categories[category] += amount
-        else:
-            categories[category] = amount
-
-    print(f"\nTotal Spent: ${total:.2f}")
-    print("By Category:")
-    for cat, amt in categories.items():
-        print(f"  {cat}: ${amt:.2f}")
-
-main()
+if __name__ == "__main__":
+    show_menu()
